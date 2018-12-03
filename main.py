@@ -1,6 +1,6 @@
 import tensorflow as tf
-import keras
-from keras import layers
+from tensorflow import keras
+#from keras import layers
 import os
 
 
@@ -20,63 +20,77 @@ def parse_image(img):
 
 
 def iterate_through_directories(rootdir):
-    directory = os.fsencode(rootdir)
+	directory = os.fsencode(rootdir)
+	#print(directory)
+	# list = [name for name in os.listdir(directory) if os.path.isdir(os.path.join(directory, name))]
+	# for subdir in os.listdir(directory):
+	# 	if os.path.isdir(os.path.join(directory, subdir)):
+	# 		basename = os.path.basename(subdir)
+	# 		for file in subdir:
+	# 			print(basename, file)
+	images = []
+	labels = []
+	class_names = []
+	# for path, dirs, files in os.walk(directory):
 
-    # list = [name for name in os.listdir(directory) if os.path.isdir(os.path.join(directory, name))]
+	# 	base_name = os.path.basename(path)
+	# 	for subdir, dirs, files in os.walk(rootdir):
 
-    # for subdir in os.listdir(directory):
-    #     if os.path.isdir(os.path.join(directory, subdir)):
-    #         basename = os.path.basename(subdir)
-    #         for file in subdir:
-    #             print(basename, file)
+	# 	class_names.append(base_name)
+	# print(files)
 
-    images = []
-    labels = []
-    class_names = []
 
-    for path, dirs, files in os.walk(directory):
+	# for file in files:
 
-        base_name = os.path.basename(path)
+	# 	img = tf.read_file(file)
+	# 	images.append(img)
+	# 	labels.append(base_name)
 
-        class_names.append(base_name)
+	# return images, labels
+	i = 0;
+	for subdir, dirs, files in os.walk(rootdir):
+		labels.append(os.path.basename(subdir))
+		for file in files:
+			images.append(file)
 
-        for file in files:
 
-            img = tf.read_file(file)
-            images.append(img)
-            labels.append(base_name)
 
-    return images, labels, class_names
+	#print(len(images))
+	return images, labels
+
 
 
 
 def main():
 
-    rootdir = "training_set"
+    rootdir = "../nn-image-classification/training_set"
     images, labels = iterate_through_directories(rootdir)
 
     print(len(images))
-    greyscale = parse_image(images[2])
+    #greyscale = parse_image(images[2])
 
-    print("num images:", len(images), "num labels:", len(labels))
+    #print("num images:", len(images), "num labels:", len(labels))
 
-    print("classes", class_names)
-    print("classes", len(class_names))
-
+    #print("classes", class_names)
+    #print("classes", len(class_names))
     preprocessed_images = [parse_image(img) for img in images]
+    # model.add(layers.Dense(64, activation="relu"))
+    # model.add(layers.Dense(64, activation="relu"))
+    # model.add(layers.Dense(15, activation="softmax"))
+    # print("layers added to model")
+    # model.compile(optimizer=tf.train.AdamOptimizer(),
+    #               loss='sparse_categorical_crossentropy',
+    #               metrics=['accuracy'])
 
-    model = keras.Sequential()
-
-    model.add(layers.Dense(64, activation="relu"))
-    model.add(layers.Dense(64, activation="relu"))
-    model.add(layers.Dense(15, activation="softmax"))
-    print("layers added to model")
-    model.compile(optimizer=tf.train.AdamOptimizer(),
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
-
-    print(model)
-    model.fit(preprocessed_images, labels, epochs=5)
+    # print(model)
+    model = keras.Sequential([
+    keras.layers.Flatten(input_shape=(28, 28)),
+    keras.layers.Dense(1, activation=tf.nn.relu),
+    keras.layers.Dense(15, activation=tf.nn.softmax)])
+    model.compile(optimizer=tf.train.AdamOptimizer(), 
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+    model.fit(preprocessed_images, labels, epochs=5, steps_per_epoch=5)
 
 
 if __name__ == "__main__":
