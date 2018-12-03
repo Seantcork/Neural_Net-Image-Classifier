@@ -1,6 +1,5 @@
 import tensorflow as tf
-import keras
-from keras import layers
+from tensorflow import keras
 import os
 
 
@@ -55,16 +54,22 @@ def main():
 
     classes, labels, file_paths, images = iterate_through_directories(rootdir)
 
-    preprocessed_images = [parse_image(img) for img in images]
+    img = images[0]
+    decoded = tf.image.decode_jpeg(img)
+    decoded_imgs = [tf.image.decode_jpeg(img) for img in images]
+    print("done decoding")
+
+    dataset = tf.data.Dataset.from_tensors((decoded_imgs, labels))
+    dataset = dataset.batch(32).repeat()
 
     model = keras.Sequential([
-    keras.layers.Flatten(input_shape=(28, 28)),
-    keras.layers.Dense(1, activation=tf.nn.relu),
-    keras.layers.Dense(15, activation=tf.nn.softmax)])
+        keras.layers.Flatten(input_shape=(28, 28)),
+        keras.layers.Dense(1, activation=tf.nn.relu),
+        keras.layers.Dense(15, activation=tf.nn.softmax)])
     model.compile(optimizer=tf.train.AdamOptimizer(),
-              loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
-    model.fit(preprocessed_images, labels, epochs=5, steps_per_epoch=5)
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+    model.fit(dataset, epochs=5, steps_per_epoch=5)
 
 
 if __name__ == "__main__":
