@@ -1,6 +1,6 @@
 import tensorflow as tf
-import keras
-from keras import layers
+from tensorflow import keras
+from tensorflow.keras import layers
 import os
 
 
@@ -19,64 +19,61 @@ def parse_image(img):
     return greyscale
 
 
+
 def iterate_through_directories(rootdir):
     directory = os.fsencode(rootdir)
 
-    # list = [name for name in os.listdir(directory) if os.path.isdir(os.path.join(directory, name))]
+    # walk returns 3-part tuple in format (directory, [subdirs], [files])
+    iterator = tf.gfile.Walk(directory)
 
-    # for subdir in os.listdir(directory):
-    #     if os.path.isdir(os.path.join(directory, subdir)):
-    #         basename = os.path.basename(subdir)
-    #         for file in subdir:
-    #             print(basename, file)
+    classes = next(iterator)[1]
 
-    images = []
     labels = []
-    class_names = []
+    file_paths = []
+    imgs = []
 
-    for path, dirs, files in os.walk(directory):
+    for subdir_name in classes:
+        dir_path = rootdir + '/' + subdir_name
+        subdir = os.fsencode(dir_path)
+        generator = tf.gfile.Walk(subdir)
+        files = next(generator)[2]
+        for file_name in files:
+            file_path = dir_path + '/' + file_name
+            img = tf.read_file(file_path)
 
-        base_name = os.path.basename(path)
+            file_paths.append(file_path)
+            imgs.append(img)
+            labels.append(subdir_name)
 
-        class_names.append(base_name)
+    return classes, labels, file_paths, imgs
 
-        for file in files:
-
-            img = tf.read_file(file)
-            images.append(img)
-            labels.append(base_name)
-
-    return images, labels, class_names
 
 
 
 def main():
 
     rootdir = "training_set"
-    images, labels = iterate_through_directories(rootdir)
 
-    print(len(images))
-    greyscale = parse_image(images[2])
+    classes, labels, file_paths, imgs = iterate_through_directories(rootdir)
 
-    print("num images:", len(images), "num labels:", len(labels))
+    print("done creating images")
+    print(imgs[0])
+    decoded = tf.image.decode_jpeg(imgs[0])
+    resized = tf.image.resize_images(decoded, [28, 28])
+    greyscale = tf.image.rgb_to_grayscale(resized)
 
-    print("classes", class_names)
-    print("classes", len(class_names))
 
-    preprocessed_images = [parse_image(img) for img in images]
-
-    model = keras.Sequential()
-
-    model.add(layers.Dense(64, activation="relu"))
-    model.add(layers.Dense(64, activation="relu"))
-    model.add(layers.Dense(15, activation="softmax"))
-    print("layers added to model")
-    model.compile(optimizer=tf.train.AdamOptimizer(),
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
-
-    print(model)
-    model.fit(preprocessed_images, labels, epochs=5)
+    # new_imgs = [parse_image(img) for img in imgs]
+    # print("done parsing images")
+    #
+    # model = keras.Sequential([
+    #     keras.layers.Flatten(input_shape=(28, 28)),
+    #     keras.layers.Dense(1, activation=tf.nn.relu),
+    #     keras.layers.Dense(15, activation=tf.nn.softmax)])
+    # model.compile(optimizer=tf.train.AdamOptimizer(),
+    #               loss='sparse_categorical_crossentropy',
+    #               metrics=['accuracy'])
+    # model.fit(new_imgs, labels, epochs=5, steps_per_epoch=5)
 
 
 if __name__ == "__main__":
