@@ -1,4 +1,6 @@
 import tensorflow as tf
+import keras
+from keras import layers
 import os
 
 
@@ -47,9 +49,6 @@ def iterate_through_directories(rootdir):
     return images, labels, class_names
 
 
-def setup_tf_model():
-    print("nada")
-
 
 def main():
 
@@ -60,10 +59,22 @@ def main():
     print("num images:", len(images), "num labels:", len(labels))
 
     print("classes", class_names)
+    print("classes", len(class_names))
 
-    new_images = [parse_image(img) for img in images]
+    preprocessed_images = [parse_image(img) for img in images]
 
+    model = keras.Sequential()
 
+    model.add(layers.Dense(64, activation="relu"))
+    model.add(layers.Dense(64, activation="relu"))
+    model.add(layers.Dense(15, activation="softmax"))
+    print("layers added to model")
+    model.compile(optimizer=tf.train.AdamOptimizer(),
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+
+    print(model)
+    model.fit(preprocessed_images, labels, epochs=5)
 
 
 if __name__ == "__main__":
