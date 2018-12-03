@@ -1,6 +1,6 @@
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
+import keras
+from keras import layers
 import os
 
 
@@ -17,7 +17,6 @@ def parse_image(img):
     #     print(greyscale_img)
 
     return greyscale
-
 
 
 def iterate_through_directories(rootdir):
@@ -54,26 +53,18 @@ def main():
 
     rootdir = "training_set"
 
-    classes, labels, file_paths, imgs = iterate_through_directories(rootdir)
+    classes, labels, file_paths, images = iterate_through_directories(rootdir)
 
-    print("done creating images")
-    print(imgs[0])
-    decoded = tf.image.decode_jpeg(imgs[0])
-    resized = tf.image.resize_images(decoded, [28, 28])
-    greyscale = tf.image.rgb_to_grayscale(resized)
+    preprocessed_images = [parse_image(img) for img in images]
 
-
-    # new_imgs = [parse_image(img) for img in imgs]
-    # print("done parsing images")
-    #
-    # model = keras.Sequential([
-    #     keras.layers.Flatten(input_shape=(28, 28)),
-    #     keras.layers.Dense(1, activation=tf.nn.relu),
-    #     keras.layers.Dense(15, activation=tf.nn.softmax)])
-    # model.compile(optimizer=tf.train.AdamOptimizer(),
-    #               loss='sparse_categorical_crossentropy',
-    #               metrics=['accuracy'])
-    # model.fit(new_imgs, labels, epochs=5, steps_per_epoch=5)
+    model = keras.Sequential([
+    keras.layers.Flatten(input_shape=(28, 28)),
+    keras.layers.Dense(1, activation=tf.nn.relu),
+    keras.layers.Dense(15, activation=tf.nn.softmax)])
+    model.compile(optimizer=tf.train.AdamOptimizer(),
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+    model.fit(preprocessed_images, labels, epochs=5, steps_per_epoch=5)
 
 
 if __name__ == "__main__":
