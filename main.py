@@ -52,9 +52,11 @@ def iterate_through_directories(rootdir):
 
 def main():
 
-    rootdir = "hw-4-images/training_set"
-    images, labels, class_names = iterate_through_directories(rootdir)
+    rootdir = "training_set"
+    images, labels = iterate_through_directories(rootdir)
 
+    print(len(images))
+    greyscale = parse_image(images[2])
 
     print("num images:", len(images), "num labels:", len(labels))
 
