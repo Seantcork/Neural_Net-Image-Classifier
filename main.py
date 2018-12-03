@@ -30,39 +30,41 @@ def iterate_through_directories(rootdir):
 
     images = []
     labels = []
+    class_names = []
+
     for path, dirs, files in os.walk(directory):
 
         base_name = os.path.basename(path)
 
+        class_names.append(base_name)
+
         for file in files:
+
             img = tf.read_file(file)
             images.append(img)
             labels.append(base_name)
 
-    return images, labels
+    return images, labels, class_names
+
+
+def setup_tf_model():
+    print("nada")
 
 
 def main():
 
     rootdir = "hw-4-images/training_set"
-    images, labels = iterate_through_directories(rootdir)
+    images, labels, class_names = iterate_through_directories(rootdir)
 
 
-    greyscale = parse_image(images[2])
+    print("num images:", len(images), "num labels:", len(labels))
 
-    original_len = len(images)
-    images = [parse_image(img) for img in images]
+    print("classes", class_names)
 
-    print("original len", original_len)
-    print("new len", len(images))
-
+    new_images = [parse_image(img) for img in images]
 
 
 
-    # img = tf.read_file(file)
-    # label = "Test"
-    # greyscale, label = parse_image(img, label)
-    # print(greyscale)
 
 if __name__ == "__main__":
     main()
