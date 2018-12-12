@@ -87,7 +87,7 @@ def main():
     #     keras.layers.Flatten(input_shape=(1503, 28, 28)),
     #     keras.layers.Dense(1, activation=tf.nn.relu),
     #     keras.layers.Dense(15, activation=tf.nn.softmax)])
-    img_input = keras.layers.Input(shape=(150, 150, 3))
+    img_input = keras.layers.Input(shape=(64, 64, 1))
     # First convolution extracts 16 filters that are 3x3
     # Convolution is followed by max-pooling layer with a 2x2 window
     x = keras.layers.Conv2D(16, 3, activation='relu')(img_input)
@@ -103,14 +103,14 @@ def main():
     x = keras.layers.Conv2D(64, 3, activation='relu')(x)
     x = keras.layers.MaxPooling2D(2)(x)
 
+    x = keras.layers.Conv2D(128, 3, activation='relu')(x)
+    x = keras.layers.MaxPooling2D(2)(x)
 
     x = keras.layers.Flatten()(x)
 
     # Create a fully connected layer with ReLU activation and 512 hidden units
     x = keras.layers.Dense(512, activation='relu')(x)
     x = keras.layers.Dense(512, activation='relu')(x)
-    x = keras.layers.Dense(512, activation='relu')(x)
-
 
     output = keras.layers.Dense(14, activation='softmax')(x)
 
@@ -128,24 +128,30 @@ def main():
 
     train_datagen = ImageDataGenerator(rescale=1./255)
     train_dir = "training_set"
-    train_generator = train_datagen.flow_from_directory(train_dir, target_size=(150, 150), class_mode='categorical', color_mode= 'rgb')
+    train_generator = train_datagen.flow_from_directory(train_dir, target_size=(64, 64), class_mode='categorical', color_mode= 'grayscale')
     test_datagen = ImageDataGenerator(rescale=1./255)
-    validation_dir = "test_data"
-    validation_generator = test_datagen.flow_from_directory(
-        validation_dir,
-        target_size=(150, 150),
-        class_mode='sparse', color_mode='rgb')
-    print("dont with images")
 
-    #model.fit(dataset, epochs=5, steps_per_epoch=5)
+    test_dir = "test_data"
+    test_generator = test_datagen.flow_from_directory(
+        test_dir,
+        target_size=(64, 64),
+        class_mode='categorical', color_mode='grayscale')
+
+
 
 
 
     history = model.fit_generator(
       train_generator,
       steps_per_epoch=100,  # 2000 images = batch_size * steps
-      epochs=20,validation_data=validation_generator,validation_steps=100)
+      epochs=25)
     acc = history.history['acc']
-    print(acc)
+
+    print(model.metrics_names)
+
+    print("this is testing accuracy")
+    testing = model.evaluate_generator(test_generator);
+    print(testing[1])
+
 
 main()
